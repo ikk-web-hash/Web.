@@ -1,41 +1,46 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Data Gaji Karyawan</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
       background-color: #f9f9f9;
-      background-image: url("https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=2000&q=80");
+      background-image: url("https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=2015");
       background-size: cover;
       background-position: center;
     }
+
     h2 {
       text-align: center;
       margin-bottom: 20px;
       color: #333;
-      background-color: rgba(255,255,255,0.8);
+      background-color: rgba(255, 255, 255, 0.8);
       display: inline-block;
       padding: 10px 20px;
       border-radius: 10px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
     th, td {
       border: 1px solid #ccc;
       padding: 8px;
       text-align: center;
     }
+
     th {
       background-color: #eaeaea;
     }
+
     input[type="number"], input[type="text"], input[type="date"] {
       width: 100%;
       box-sizing: border-box;
@@ -44,6 +49,7 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+
     button {
       margin-top: 15px;
       padding: 8px 16px;
@@ -53,10 +59,13 @@
       color: white;
       border: none;
       border-radius: 5px;
+      transition: 0.2s;
     }
+
     button:hover {
       background-color: #45a049;
     }
+
     .btn-aksi {
       padding: 5px 10px;
       margin: 2px;
@@ -64,21 +73,56 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     .btn-edit {
       background-color: #2196F3;
       color: white;
     }
+
     .btn-hapus {
       background-color: #f44336;
       color: white;
     }
+
     .btn-edit:hover { background-color: #0b7dda; }
     .btn-hapus:hover { background-color: #da190b; }
+
     footer {
       margin-top: 30px;
       text-align: center;
       font-size: 13px;
       color: #555;
+    }
+
+    .btn-export {
+      background-color: #007BFF;
+      color: white;
+      border-radius: 5px;
+      margin-top: 15px;
+    }
+
+    .btn-export:hover {
+      background-color: #0066cc;
+    }
+
+    .btn-print {
+      background-color: #FF9800;
+      color: white;
+      border-radius: 5px;
+      margin-top: 15px;
+    }
+
+    .btn-print:hover {
+      background-color: #e68900;
+    }
+
+    @media print {
+      button, footer {
+        display: none;
+      }
+      body {
+        background: white;
+      }
     }
   </style>
 </head>
@@ -108,16 +152,16 @@
     <tbody id="tableBody">
       <tr>
         <td>1</td>
-        <td><input type="date" onchange="updateHari(this); hitung(this)" /></td>
+        <td><input type="date" onchange="updateHari(this); hitung(this)"></td>
         <td class="hari"></td>
-        <td><input type="text" placeholder="Nama" /></td>
-        <td><input type="text" placeholder="NIK" /></td>
-        <td><input type="text" placeholder="Bagian" /></td>
-        <td><input type="number" oninput="hitung(this)" /></td>
-        <td><input type="number" oninput="hitung(this)" /></td>
+        <td><input type="text" placeholder="Nama"></td>
+        <td><input type="text" placeholder="NIK"></td>
+        <td><input type="text" placeholder="Bagian"></td>
+        <td><input type="number" oninput="hitung(this)"></td>
+        <td><input type="number" oninput="hitung(this)"></td>
         <td class="totalGaji"></td>
-        <td><input type="number" oninput="hitung(this)" /></td>
-        <td><input type="number" oninput="hitung(this)" /></td>
+        <td><input type="number" oninput="hitung(this)"></td>
+        <td><input type="number" oninput="hitung(this)"></td>
         <td class="totalLembur"></td>
         <td class="grandTotal"></td>
         <td>
@@ -129,13 +173,15 @@
   </table>
 
   <button onclick="tambahBaris()">+ Tambah Baris</button>
+  <button class="btn-export" onclick="exportExcel()">📤 Export ke Excel</button>
+  <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF</button>
 
   <footer>© 2025 PT IKK — Rekap Gaji Karyawan</footer>
 
   <script>
     // Format angka jadi Rupiah
     function formatRupiah(angka) {
-      return "Rp " + angka.toLocaleString("id-ID");
+      return "Rp " + angka.toLocaleString("id-ID", { minimumFractionDigits: 0 });
     }
 
     // Mengubah tanggal jadi nama hari otomatis
@@ -147,7 +193,7 @@
         hariCell.textContent = "";
         return;
       }
-      const tanggal = new Date(tglValue + "T00:00:00");
+      const tanggal = new Date(tglValue);
       const namaHari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
       hariCell.textContent = namaHari[tanggal.getDay()];
     }
@@ -155,47 +201,48 @@
     // Hitung otomatis per baris
     function hitung(el) {
       const row = el.closest("tr");
-      const gajiPerHari = parseFloat(row.querySelectorAll("input")[3]?.value) || 0;
-      const totalHari = parseFloat(row.querySelectorAll("input")[4]?.value) || 0;
-      const lemburPerJam = parseFloat(row.querySelectorAll("input")[5]?.value) || 0;
-      const jamLembur = parseFloat(row.querySelectorAll("input")[6]?.value) || 0;
+      const gajiPerHari = parseFloat(row.querySelector('td:nth-child(7) input')?.value) || 0;
+      const totalHari = parseFloat(row.querySelector('td:nth-child(8) input')?.value) || 0;
+      const lemburPerJam = parseFloat(row.querySelector('td:nth-child(10) input')?.value) || 0;
+      const jamLembur = parseFloat(row.querySelector('td:nth-child(11) input')?.value) || 0;
 
       const totalGaji = gajiPerHari * totalHari;
       const totalLembur = lemburPerJam * jamLembur;
       const grandTotal = totalGaji + totalLembur;
 
-      row.querySelector(".totalGaji").textContent = formatRupiah(totalGaji);
-      row.querySelector(".totalLembur").textContent = formatRupiah(totalLembur);
-      row.querySelector(".grandTotal").textContent = formatRupiah(grandTotal);
+      row.querySelector('.totalGaji').textContent = formatRupiah(totalGaji);
+      row.querySelector('.totalLembur').textContent = formatRupiah(totalLembur);
+      row.querySelector('.grandTotal').textContent = formatRupiah(grandTotal);
     }
 
     // Tambah baris baru
     function tambahBaris() {
       const tableBody = document.getElementById("tableBody");
       const rowCount = tableBody.rows.length + 1;
-      const newRow = document.createElement("tr");
-      newRow.innerHTML = `
-        <td>${rowCount}</td>
-        <td><input type="date" onchange="updateHari(this); hitung(this)" /></td>
-        <td class="hari"></td>
-        <td><input type="text" placeholder="Nama" /></td>
-        <td><input type="text" placeholder="NIK" /></td>
-        <td><input type="text" placeholder="Bagian" /></td>
-        <td><input type="number" oninput="hitung(this)" /></td>
-        <td><input type="number" oninput="hitung(this)" /></td>
-        <td class="totalGaji"></td>
-        <td><input type="number" oninput="hitung(this)" /></td>
-        <td><input type="number" oninput="hitung(this)" /></td>
-        <td class="totalLembur"></td>
-        <td class="grandTotal"></td>
-        <td>
-          <button class="btn-aksi btn-edit" onclick="toggleEdit(this)">Edit</button>
-          <button class="btn-aksi btn-hapus" onclick="hapusBaris(this)">Hapus</button>
-        </td>`;
-      tableBody.appendChild(newRow);
+      const newRow = `
+        <tr>
+          <td>${rowCount}</td>
+          <td><input type="date" onchange="updateHari(this); hitung(this)"></td>
+          <td class="hari"></td>
+          <td><input type="text" placeholder="Nama"></td>
+          <td><input type="text" placeholder="NIK"></td>
+          <td><input type="text" placeholder="Bagian"></td>
+          <td><input type="number" oninput="hitung(this)"></td>
+          <td><input type="number" oninput="hitung(this)"></td>
+          <td class="totalGaji"></td>
+          <td><input type="number" oninput="hitung(this)"></td>
+          <td><input type="number" oninput="hitung(this)"></td>
+          <td class="totalLembur"></td>
+          <td class="grandTotal"></td>
+          <td>
+            <button class="btn-aksi btn-edit" onclick="toggleEdit(this)">Edit</button>
+            <button class="btn-aksi btn-hapus" onclick="hapusBaris(this)">Hapus</button>
+          </td>
+        </tr>`;
+      tableBody.insertAdjacentHTML('beforeend', newRow);
     }
 
-    // Edit & Simpan data
+    // Edit dan simpan data
     function toggleEdit(btn) {
       const row = btn.closest("tr");
       const inputs = row.querySelectorAll("input");
@@ -216,13 +263,27 @@
       updateNomor();
     }
 
-    // Update nomor otomatis
+    // Update penomoran otomatis
     function updateNomor() {
-      const rows = document.querySelectorAll("#tableBody tr");
-      rows.forEach((r, i) => {
-        r.querySelector("td:first-child").textContent = i + 1;
+      document.querySelectorAll("#tableBody tr").forEach((row, i) => {
+        row.querySelector("td:first-child").textContent = i + 1;
       });
     }
+
+    // Export ke Excel
+    function exportExcel() {
+      const table = document.getElementById("gajiTable").outerHTML;
+      const blob = new Blob([table], { type: "application/vnd.ms-excel" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "Rekap_Gaji_Karyawan.xls";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Jalankan hitung awal
+    document.querySelectorAll('#gajiTable input').forEach(i => hitung(i));
   </script>
 
 </body>
