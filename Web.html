@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Gaji Karyawan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f9f9f9;
+      background-image: url("https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=2000&q=80");
+      background-size: cover;
+      background-position: center;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+      background-color: rgba(255,255,255,0.8);
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eaeaea;
+    }
+    input[type="number"], input[type="text"], input[type="date"] {
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      padding: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .btn-aksi {
+      padding: 5px 10px;
+      margin: 2px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-edit {
+      background-color: #2196F3;
+      color: white;
+    }
+    .btn-hapus {
+      background-color: #f44336;
+      color: white;
+    }
+    .btn-edit:hover { background-color: #0b7dda; }
+    .btn-hapus:hover { background-color: #da190b; }
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 13px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Rekap Gaji Karyawan</h2>
+
+  <table id="gajiTable">
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Tgl</th>
+        <th>Hari</th>
+        <th>Nama</th>
+        <th>NIK</th>
+        <th>Bagian</th>
+        <th>Gaji/Hari (Rp)</th>
+        <th>Total Hari</th>
+        <th>Total Gaji</th>
+        <th>Lembur (Rp)</th>
+        <th>Jam Lembur</th>
+        <th>Total Lembur</th>
+        <th>Grand Total</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <tr>
+        <td>1</td>
+        <td><input type="date" onchange="updateHari(this); hitung(this)" /></td>
+        <td class="hari"></td>
+        <td><input type="text" placeholder="Nama" /></td>
+        <td><input type="text" placeholder="NIK" /></td>
+        <td><input type="text" placeholder="Bagian" /></td>
+        <td><input type="number" oninput="hitung(this)" /></td>
+        <td><input type="number" oninput="hitung(this)" /></td>
+        <td class="totalGaji"></td>
+        <td><input type="number" oninput="hitung(this)" /></td>
+        <td><input type="number" oninput="hitung(this)" /></td>
+        <td class="totalLembur"></td>
+        <td class="grandTotal"></td>
+        <td>
+          <button class="btn-aksi btn-edit" onclick="toggleEdit(this)">Edit</button>
+          <button class="btn-aksi btn-hapus" onclick="hapusBaris(this)">Hapus</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button onclick="tambahBaris()">+ Tambah Baris</button>
+
+  <footer>© 2025 PT IKK — Rekap Gaji Karyawan</footer>
+
+  <script>
+    // Format angka jadi Rupiah
+    function formatRupiah(angka) {
+      return "Rp " + angka.toLocaleString("id-ID");
+    }
+
+    // Mengubah tanggal jadi nama hari otomatis
+    function updateHari(el) {
+      const row = el.closest("tr");
+      const hariCell = row.querySelector(".hari");
+      const tglValue = el.value;
+      if (!tglValue) {
+        hariCell.textContent = "";
+        return;
+      }
+      const tanggal = new Date(tglValue + "T00:00:00");
+      const namaHari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      hariCell.textContent = namaHari[tanggal.getDay()];
+    }
+
+    // Hitung otomatis per baris
+    function hitung(el) {
+      const row = el.closest("tr");
+      const gajiPerHari = parseFloat(row.querySelectorAll("input")[3]?.value) || 0;
+      const totalHari = parseFloat(row.querySelectorAll("input")[4]?.value) || 0;
+      const lemburPerJam = parseFloat(row.querySelectorAll("input")[5]?.value) || 0;
+      const jamLembur = parseFloat(row.querySelectorAll("input")[6]?.value) || 0;
+
+      const totalGaji = gajiPerHari * totalHari;
+      const totalLembur = lemburPerJam * jamLembur;
+      const grandTotal = totalGaji + totalLembur;
+
+      row.querySelector(".totalGaji").textContent = formatRupiah(totalGaji);
+      row.querySelector(".totalLembur").textContent = formatRupiah(totalLembur);
+      row.querySelector(".grandTotal").textContent = formatRupiah(grandTotal);
+    }
+
+    // Tambah baris baru
+    function tambahBaris() {
+      const tableBody = document.getElementById("tableBody");
+      const rowCount = tableBody.rows.length + 1;
+      const newRow = document.createElement("tr");
+      newRow.innerHTML = `
+        <td>${rowCount}</td>
+        <td><input type="date" onchange="updateHari(this); hitung(this)" /></td>
+        <td class="hari"></td>
+        <td><input type="text" placeholder="Nama" /></td>
+        <td><input type="text" placeholder="NIK" /></td>
+        <td><input type="text" placeholder="Bagian" /></td>
+        <td><input type="number" oninput="hitung(this)" /></td>
+        <td><input type="number" oninput="hitung(this)" /></td>
+        <td class="totalGaji"></td>
+        <td><input type="number" oninput="hitung(this)" /></td>
+        <td><input type="number" oninput="hitung(this)" /></td>
+        <td class="totalLembur"></td>
+        <td class="grandTotal"></td>
+        <td>
+          <button class="btn-aksi btn-edit" onclick="toggleEdit(this)">Edit</button>
+          <button class="btn-aksi btn-hapus" onclick="hapusBaris(this)">Hapus</button>
+        </td>`;
+      tableBody.appendChild(newRow);
+    }
+
+    // Edit & Simpan data
+    function toggleEdit(btn) {
+      const row = btn.closest("tr");
+      const inputs = row.querySelectorAll("input");
+      if (btn.textContent === "Edit") {
+        inputs.forEach(i => i.removeAttribute("readonly"));
+        btn.textContent = "Simpan";
+        btn.style.backgroundColor = "#FF9800";
+      } else {
+        inputs.forEach(i => i.setAttribute("readonly", true));
+        btn.textContent = "Edit";
+        btn.style.backgroundColor = "#2196F3";
+      }
+    }
+
+    // Hapus baris
+    function hapusBaris(btn) {
+      btn.closest("tr").remove();
+      updateNomor();
+    }
+
+    // Update nomor otomatis
+    function updateNomor() {
+      const rows = document.querySelectorAll("#tableBody tr");
+      rows.forEach((r, i) => {
+        r.querySelector("td:first-child").textContent = i + 1;
+      });
+    }
+  </script>
+
+</body>
+</html>
